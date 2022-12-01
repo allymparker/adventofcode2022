@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"sort"
 	"strconv"
 )
 
@@ -16,20 +17,22 @@ func main() {
 	}
 	defer f.Close()
 
+	var maxElvesCals [3]int
+
 	elf := 0
 	elfCals := 0
-	maxCalsElf := 0
-	maxCals := 0
 
 	s := bufio.NewScanner(f)
 	for s.Scan() {
 		ln := s.Text()
 		if ln == "" {
-			if elfCals >= maxCals {
-				fmt.Printf("Elf %d has more calories than elf %d: %d > %d\n", elf, maxCalsElf, elfCals, maxCals)
-
-				maxCals = elfCals
-				maxCalsElf = elf
+			fmt.Printf("Total Cals for elf %d: %d\n", elf, elfCals)
+			for i := 0; i < 3; i++ {
+				if elfCals > maxElvesCals[i] {
+					maxElvesCals[i] = elfCals
+					sort.Ints(maxElvesCals[:])
+					break
+				}
 			}
 			elf++
 			elfCals = 0
@@ -38,7 +41,13 @@ func main() {
 		elfCals += cals
 	}
 
-	fmt.Printf("\nElf %d has most calories %d", maxCalsElf, maxCals)
+	fmt.Println("\nTop 3")
+	var totalMaxCals int
+	for i := 0; i < 3; i++ {
+		totalMaxCals+=maxElvesCals[i]
+		fmt.Println(maxElvesCals[i])
+	}
+	fmt.Printf("\nTotal Top 3 Cals %d", totalMaxCals)
 }
 
 func downloadInput() (err error) {
