@@ -35,6 +35,15 @@ const (
 	Scissors      = 3
 )
 
+type Result int
+
+const (
+	ResultUnknown Result = iota
+	YouLose
+	YouDraw
+	YouWin
+)
+
 func parseOpponent(o string) (Hand, error) {
 	switch o {
 	case "A":
@@ -70,56 +79,42 @@ func scoreHand(o string, u string) int {
 		return 0
 	}
 
-	w, _ := handWinner(oh, uh)
+	w := winner(oh, uh)
 
 	return score(uh, w)
 }
 
-func winner(o string, u string) (int, error) {
-	oh, err := parseOpponent(o)
-	if err != nil {
-		return -1, errors.New("couldn't parse o")
-	}
-
-	uh, err := parseYou(u)
-	if err != nil {
-		return -1, errors.New("couldn't parse u")
-	}
-
-	return handWinner(oh, uh)
-}
-
-func handWinner(oh Hand, uh Hand) (int, error) {
+func winner(oh Hand, uh Hand) Result {
 	if oh == uh {
-		return 0, nil
+		return YouDraw
 	}
 
 	if oh == Rock {
 		if uh == Scissors {
-			return 1, nil
+			return YouLose
 		}
-		return 2, nil
+		return YouWin
 	}
 
 	if oh == Paper {
 		if uh == Rock {
-			return 1, nil
+			return YouLose
 		}
-		return 2, nil
+		return YouWin
 	}
 
 	if uh == Paper {
-		return 1, nil
+		return YouLose
 	}
 
-	return 2, nil
+	return YouWin
 }
 
-func score(u Hand, result int) int {
+func score(u Hand, result Result) int {
 	score := int(u)
-	if result == 0 {
+	if result == YouDraw {
 		score += 3
-	} else if result == 2 {
+	} else if result == YouWin {
 		score += 6
 	}
 	return score
