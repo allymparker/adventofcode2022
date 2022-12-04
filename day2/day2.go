@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func Main() {
+func Part1() {
 	f, err := os.Open("day2-input.txt")
 	if err != nil {
 		fmt.Println(err)
@@ -19,9 +19,32 @@ func Main() {
 	for s.Scan() {
 		ln := s.Text()
 		rawHands := strings.Split(ln, " ")
+		oh, _ := parseOpponent(rawHands[0])
+		uh, _ := parseYou(rawHands[1])
 
-		score += scoreHand(rawHands[0], rawHands[1])
+		w := winner(oh, uh)
+		score += calcScore(uh, w)
 
+	}
+	fmt.Println(score)
+}
+
+func Part2() {
+	f, err := os.Open("day2-input.txt")
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer f.Close()
+	var score int
+	s := bufio.NewScanner(f)
+	for s.Scan() {
+		ln := s.Text()
+		rawHands := strings.Split(ln, " ")
+		oh, _ := parseOpponent(rawHands[0])
+		r := parseYouResult(rawHands[1])
+		uh := calcYourHand(oh, r)
+		w := winner(oh, uh)
+		score += calcScore(uh, w)
 	}
 	fmt.Println(score)
 }
@@ -30,9 +53,9 @@ type Hand int
 
 const (
 	Unknown  Hand = iota
-	Rock          = 1
-	Paper         = 2
-	Scissors      = 3
+	Rock     Hand = 1
+	Paper    Hand = 2
+	Scissors Hand = 3
 )
 
 type Result int
@@ -68,20 +91,45 @@ func parseYou(u string) (Hand, error) {
 	return Unknown, errors.New("Unknown")
 }
 
-func scoreHand(o string, u string) int {
-	oh, err := parseOpponent(o)
-	if err != nil {
-		return 0
+func parseYouResult(u string) Result {
+	switch u {
+	case "X":
+		return YouLose
+	case "Y":
+		return YouDraw
+	case "Z":
+		return YouWin
+	}
+	return ResultUnknown
+}
+
+func calcYourHand(o Hand, r Result) Hand {
+	if r == YouDraw {
+		return o
 	}
 
-	uh, err := parseYou(u)
-	if err != nil {
-		return 0
+	if r == YouWin {
+		switch {
+		case o == Rock:
+			return Paper
+		case o == Paper:
+			return Scissors
+		default:
+			return Rock
+		}
 	}
 
-	w := winner(oh, uh)
-
-	return score(uh, w)
+	if r == YouLose {
+		switch {
+		case o == Rock:
+			return Scissors
+		case o == Paper:
+			return Rock
+		default:
+			return Paper
+		}
+	}
+	return Unknown
 }
 
 func winner(oh Hand, uh Hand) Result {
@@ -110,7 +158,7 @@ func winner(oh Hand, uh Hand) Result {
 	return YouWin
 }
 
-func score(u Hand, result Result) int {
+func calcScore(u Hand, result Result) int {
 	score := int(u)
 	if result == YouDraw {
 		score += 3

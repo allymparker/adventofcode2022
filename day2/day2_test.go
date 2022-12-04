@@ -114,8 +114,37 @@ func Test_score(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := score(tt.args.u, tt.args.result); got != tt.want {
+			if got := calcScore(tt.args.u, tt.args.result); got != tt.want {
 				t.Errorf("score() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_calcYourHand(t *testing.T) {
+	type args struct {
+		o Hand
+		r Result
+	}
+	tests := []struct {
+		name string
+		args args
+		want Hand
+	}{
+		{"R and Draw", args{Rock, YouDraw}, Rock},
+		{"P and Draw", args{Paper, YouDraw}, Paper},
+		{"S and Draw", args{Scissors, YouDraw}, Scissors},
+		{"R and Lose", args{Rock, YouLose}, Scissors},
+		{"P and Lose", args{Paper, YouLose}, Rock},
+		{"S and Lose", args{Scissors, YouLose}, Paper},
+		{"R and Win", args{Rock, YouWin}, Paper},
+		{"P and Win", args{Paper, YouWin}, Scissors},
+		{"S and Win", args{Scissors, YouWin}, Rock},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := calcYourHand(tt.args.o, tt.args.r); got != tt.want {
+				t.Errorf("calcYourHand() = %v, want %v", got, tt.want)
 			}
 		})
 	}
